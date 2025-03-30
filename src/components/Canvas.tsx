@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject, Image as FabricImage } from 'fabric';
 import { toast } from 'sonner';
 
 interface CanvasProps {
@@ -202,7 +202,7 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
           if (fabricRef.current) {
             const imgUrl = e.target?.result as string;
             
-            fabric.Image.fromURL(imgUrl, (img) => {
+            FabricImage.fromURL(imgUrl, (img) => {
               // Scale image to fit canvas
               const canvas = fabricRef.current!;
               const scale = Math.min(
