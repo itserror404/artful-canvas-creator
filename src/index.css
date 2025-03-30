@@ -62,21 +62,12 @@
   }
 
   .toolbar-button {
-    @apply p-2 rounded-lg transition-all duration-200 
+    @apply p-2 rounded-lg transition-all duration-200 text-artify-white 
            hover:bg-artify-secondary hover:text-artify-text;
-  }
-
-  /* Home page has white background, so toolbar buttons need darker color */
-  .glass .toolbar-button {
-    @apply text-artify-primary;
   }
 
   .toolbar-button.active {
     @apply bg-artify-secondary text-artify-text;
-  }
-
-  .dark-glass .toolbar-button {
-    @apply text-artify-white;
   }
 
   .sidebar-item {
@@ -104,7 +95,7 @@
   }
   
   .glass {
-    @apply bg-white/90 backdrop-blur-md border border-white/20 shadow-lg;
+    @apply bg-white/10 backdrop-blur-md border border-white/10 shadow-lg;
   }
 
   .dark-glass {

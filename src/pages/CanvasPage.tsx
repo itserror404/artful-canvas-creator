@@ -179,7 +179,7 @@ const CanvasPage = () => {
   return (
     <div className="min-h-screen pt-16 bg-artify-background flex flex-col">
       {/* Main Canvas */}
-      <div className="flex-1 flex items-center justify-center p-4 page-container" style={{ height: "calc(100vh - 80px)" }}>
+      <div className="flex-1 flex items-center justify-center p-4 page-container">
         <Canvas 
           activeTool={activeTool}
           activeColor={activeColor}

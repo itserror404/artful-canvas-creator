@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject, Image as FabricImage } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject } from 'fabric';
 import { toast } from 'sonner';
 
 interface CanvasProps {
@@ -14,26 +14,21 @@ interface CanvasProps {
 const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistory }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<FabricCanvas | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastPosX, setLastPosX] = useState(0);
   const [lastPosY, setLastPosY] = useState(0);
   
+  // Object being drawn (for shapes)
   const [drawingObject, setDrawingObject] = useState<FabricObject | null>(null);
   
   // Initialize the canvas
   useEffect(() => {
-    // Ensure both DOM refs are available
-    if (!canvasRef.current || !containerRef.current) return;
-    
-    if (!fabricRef.current) {
-      const container = containerRef.current;
-      // Calculate canvas dimensions based on container size
-      const canvasWidth = container.clientWidth - 24;
-      const canvasHeight = container.clientHeight - 24;
+    if (canvasRef.current && !fabricRef.current) {
+      const parentDiv = canvasRef.current.parentElement;
+      const canvasWidth = parentDiv ? parentDiv.clientWidth - 48 : 800;
+      const canvasHeight = parentDiv ? parentDiv.clientHeight - 48 : 600;
       
-      // Create a new Fabric canvas
       const fabricCanvas = new FabricCanvas(canvasRef.current, {
         width: canvasWidth,
         height: canvasHeight,
@@ -43,20 +38,14 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
       
       fabricRef.current = fabricCanvas;
       
-      // Initialize the drawing brush
-      if (!fabricCanvas.freeDrawingBrush) {
-        fabricCanvas.freeDrawingBrush = new PencilBrush(fabricCanvas);
-      }
-      fabricCanvas.freeDrawingBrush.width = brushSize;
-      fabricCanvas.freeDrawingBrush.color = activeColor;
-      
+      // Add initial state to history
       addToHistory(fabricCanvas);
       
-      // Handle window resize events
+      // Resize handler
       const handleResize = () => {
-        if (fabricRef.current && container) {
-          const newWidth = container.clientWidth - 24;
-          const newHeight = container.clientHeight - 24;
+        if (fabricRef.current && parentDiv) {
+          const newWidth = parentDiv.clientWidth - 48;
+          const newHeight = parentDiv.clientHeight - 48;
           
           fabricRef.current.setDimensions({
             width: newWidth,
@@ -74,28 +63,42 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
         window.removeEventListener('resize', handleResize);
       };
     }
-  }, [addToHistory, activeTool, activeColor, brushSize]);
+  }, [addToHistory, activeTool]);
   
-  // Update brush and drawing mode when tools/colors change
+  // Update canvas when tool changes
   useEffect(() => {
     const canvas = fabricRef.current;
     if (!canvas) return;
     
+    // Update drawing mode based on active tool
     canvas.isDrawingMode = activeTool === 'brush' || activeTool === 'eraser';
     
-    if (canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush.width = brushSize;
+    // Configure brush - make sure the brush is initialized before setting properties
+    if (canvas.isDrawingMode) {
+      if (!canvas.freeDrawingBrush) {
+        canvas.freeDrawingBrush = new PencilBrush(canvas);
+      }
       
-      if (activeTool === 'eraser') {
-        canvas.freeDrawingBrush.color = '#FFFFFF';
-      } else {
-        canvas.freeDrawingBrush.color = activeColor;
+      const brush = canvas.freeDrawingBrush;
+      if (brush) {
+        brush.width = brushSize;
+        
+        if (activeTool === 'eraser') {
+          // For eraser, we'll use white color
+          brush.color = '#FFFFFF';
+        } else {
+          brush.color = activeColor;
+        }
       }
     }
     
+    // Deselect any selected object
+    canvas.discardActiveObject();
     canvas.renderAll();
+    
   }, [activeTool, activeColor, brushSize]);
   
+  // Mouse down handler for shape drawing
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (activeTool !== 'circle' && activeTool !== 'rectangle') return;
     if (!fabricRef.current) return;
@@ -103,11 +106,12 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     const canvas = fabricRef.current;
     setIsDrawing(true);
     
-    // Get coordinates relative to the canvas
+    // Get canvas coordinates
     const pointer = canvas.getPointer(e.nativeEvent);
     setLastPosX(pointer.x);
     setLastPosY(pointer.y);
     
+    // Create a new shape
     let obj: FabricObject;
     
     if (activeTool === 'circle') {
@@ -122,6 +126,7 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
         originY: 'center'
       });
     } else {
+      // Rectangle
       obj = new Rect({
         left: pointer.x,
         top: pointer.y,
@@ -138,12 +143,14 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     canvas.renderAll();
   };
   
+  // Mouse move handler for shape drawing
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !drawingObject || !fabricRef.current) return;
     
     const canvas = fabricRef.current;
     const pointer = canvas.getPointer(e.nativeEvent);
     
+    // Update shape dimensions
     if (activeTool === 'circle') {
       const circle = drawingObject as Circle;
       const dx = pointer.x - lastPosX;
@@ -166,15 +173,18 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     canvas.renderAll();
   };
   
+  // Mouse up handler for shape drawing
   const handleMouseUp = () => {
     if (!isDrawing || !fabricRef.current) return;
     
     setIsDrawing(false);
     setDrawingObject(null);
     
+    // Add to history
     addToHistory(fabricRef.current);
   };
   
+  // Handle file upload for image tool
   const handleFileUpload = () => {
     if (activeTool !== 'image' || !fabricRef.current) return;
     
@@ -192,33 +202,28 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
           if (fabricRef.current) {
             const imgUrl = e.target?.result as string;
             
-            // Fix: Use the proper method signature for FabricImage.fromURL
-            // It returns a Promise in Fabric.js v6
-            FabricImage.fromURL(imgUrl)
-              .then(img => {
-                const canvas = fabricRef.current!;
-                const scale = Math.min(
-                  (canvas.width / 2) / img.width!,
-                  (canvas.height / 2) / img.height!
-                );
-                
-                img.scale(scale);
-                img.set({
-                  left: canvas.width / 4,
-                  top: canvas.height / 4
-                });
-                
-                canvas.add(img);
-                canvas.setActiveObject(img);
-                canvas.renderAll();
-                
-                addToHistory(canvas);
-                toast.success('Image added to canvas');
-              })
-              .catch(err => {
-                console.error('Error loading image:', err);
-                toast.error('Failed to load image');
+            fabric.Image.fromURL(imgUrl, (img) => {
+              // Scale image to fit canvas
+              const canvas = fabricRef.current!;
+              const scale = Math.min(
+                (canvas.width / 2) / img.width!,
+                (canvas.height / 2) / img.height!
+              );
+              
+              img.scale(scale);
+              img.set({
+                left: canvas.width / 4,
+                top: canvas.height / 4
               });
+              
+              canvas.add(img);
+              canvas.setActiveObject(img);
+              canvas.renderAll();
+              
+              // Add to history
+              addToHistory(canvas);
+              toast.success('Image added to canvas');
+            });
           }
         };
         
@@ -229,6 +234,7 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     input.click();
   };
   
+  // Handle the color picker tool
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (activeTool !== 'picker' || !fabricRef.current) return;
     
@@ -236,19 +242,22 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     const pointer = canvas.getPointer(e.nativeEvent);
     const context = canvas.getContext();
     
+    // Get pixel data at the clicked position
     const imageData = context.getImageData(pointer.x, pointer.y, 1, 1).data;
     const r = imageData[0];
     const g = imageData[1];
     const b = imageData[2];
     
+    // Convert to hex
     const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     
+    // Notify about the picked color
     toast.info(`Color picked: ${hex}`);
   };
   
   return (
-    <div className="w-full h-full flex items-center justify-center" ref={containerRef} style={{ minHeight: "calc(100vh - 150px)" }}>
-      <div className="canvas-container w-full h-full flex items-center justify-center p-3">
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="canvas-container w-full h-full flex items-center justify-center p-6">
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
@@ -261,7 +270,6 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
               handleCanvasClick(e);
             }
           }}
-          style={{ border: '1px solid #ccc', touchAction: 'none' }}
         />
       </div>
     </div>
