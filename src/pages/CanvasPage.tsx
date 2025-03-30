@@ -99,10 +99,11 @@ const CanvasPage = () => {
   const handleSave = () => {
     if (!canvasRef.current) return;
     
-    // Get canvas data URL
+    // Get canvas data URL - add the required multiplier property
     const dataURL = canvasRef.current.toDataURL({
       format: 'png',
-      quality: 1
+      quality: 1,
+      multiplier: 1 // Add the required multiplier property
     });
     
     // Create download link

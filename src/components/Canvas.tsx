@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject, Image } from 'fabric';
 import { toast } from 'sonner';
 
 interface CanvasProps {
@@ -86,16 +86,22 @@ const Canvas = ({
     // Update drawing mode based on active tool
     canvas.isDrawingMode = activeTool === 'brush' || activeTool === 'eraser';
     
-    // Configure brush
+    // Configure brush - make sure the brush is initialized before setting properties
     if (canvas.isDrawingMode) {
-      const brush = canvas.freeDrawingBrush as PencilBrush;
-      brush.width = brushSize;
+      if (!canvas.freeDrawingBrush) {
+        canvas.freeDrawingBrush = new PencilBrush(canvas);
+      }
       
-      if (activeTool === 'eraser') {
-        // For eraser, we'll use white color
-        brush.color = '#FFFFFF';
-      } else {
-        brush.color = activeColor;
+      const brush = canvas.freeDrawingBrush;
+      if (brush) {
+        brush.width = brushSize;
+        
+        if (activeTool === 'eraser') {
+          // For eraser, we'll use white color
+          brush.color = '#FFFFFF';
+        } else {
+          brush.color = activeColor;
+        }
       }
     }
     
@@ -188,7 +194,7 @@ const Canvas = ({
               const imgUrl = event.target?.result as string;
               
               // Create a fabric Image
-              fabric.Image.fromURL(imgUrl, (img) => {
+              Image.fromURL(imgUrl, (img) => {
                 // Scale image to fit canvas
                 const canvas = fabricRef.current!;
                 const scale = Math.min(
