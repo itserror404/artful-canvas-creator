@@ -6,12 +6,11 @@ import { Brush, Home, Info } from 'lucide-react';
 
 const Navigation = () => {
   const location = useLocation();
-  const isCanvasPage = location.pathname === '/canvas';
   
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 p-4 flex justify-between items-center ${isCanvasPage ? 'dark-glass' : 'glass'} animate-fade-in`}>
+    <nav className="fixed top-0 left-0 right-0 z-50 p-4 flex justify-between items-center glass animate-fade-in">
       <Link to="/" className="flex items-center gap-2">
-        <Brush className={`h-6 w-6 ${isCanvasPage ? 'text-artify-secondary' : 'text-artify-primary'}`} />
+        <Brush className="h-6 w-6 text-artify-secondary" />
         <span className="text-xl font-bold">Artify</span>
       </Link>
       
@@ -40,7 +39,7 @@ const Navigation = () => {
         {location.pathname !== '/canvas' && (
           <Button 
             asChild
-            className="bg-artify-primary text-white hover:bg-artify-primary/90 font-medium"
+            className="bg-artify-secondary text-artify-primary hover:bg-artify-secondary/90 font-medium"
           >
             <Link to="/canvas">Start Drawing</Link>
           </Button>

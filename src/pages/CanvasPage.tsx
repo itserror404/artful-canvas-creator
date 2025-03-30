@@ -16,7 +16,7 @@ interface Layer {
 const CanvasPage = () => {
   // Canvas state
   const [activeTool, setActiveTool] = useState('brush');
-  const [activeColor, setActiveColor] = useState('#6A5ACD'); // Updated to match our new primary color
+  const [activeColor, setActiveColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(5);
   const [showLayers, setShowLayers] = useState(false);
   
@@ -179,7 +179,7 @@ const CanvasPage = () => {
   return (
     <div className="min-h-screen pt-16 bg-artify-background flex flex-col">
       {/* Main Canvas */}
-      <div className="flex-1 flex items-center justify-center p-4 page-container">
+      <div className="flex-1 flex items-center justify-center p-4">
         <Canvas 
           activeTool={activeTool}
           activeColor={activeColor}
