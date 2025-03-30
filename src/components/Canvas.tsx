@@ -192,27 +192,33 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
           if (fabricRef.current) {
             const imgUrl = e.target?.result as string;
             
-            // Properly call FabricImage.fromURL with correct parameters
-            FabricImage.fromURL(imgUrl, (img) => {
-              const canvas = fabricRef.current!;
-              const scale = Math.min(
-                (canvas.width / 2) / img.width!,
-                (canvas.height / 2) / img.height!
-              );
-              
-              img.scale(scale);
-              img.set({
-                left: canvas.width / 4,
-                top: canvas.height / 4
+            // Fix: Use the proper method signature for FabricImage.fromURL
+            // It returns a Promise in Fabric.js v6
+            FabricImage.fromURL(imgUrl)
+              .then(img => {
+                const canvas = fabricRef.current!;
+                const scale = Math.min(
+                  (canvas.width / 2) / img.width!,
+                  (canvas.height / 2) / img.height!
+                );
+                
+                img.scale(scale);
+                img.set({
+                  left: canvas.width / 4,
+                  top: canvas.height / 4
+                });
+                
+                canvas.add(img);
+                canvas.setActiveObject(img);
+                canvas.renderAll();
+                
+                addToHistory(canvas);
+                toast.success('Image added to canvas');
+              })
+              .catch(err => {
+                console.error('Error loading image:', err);
+                toast.error('Failed to load image');
               });
-              
-              canvas.add(img);
-              canvas.setActiveObject(img);
-              canvas.renderAll();
-              
-              addToHistory(canvas);
-              toast.success('Image added to canvas');
-            });
           }
         };
         
