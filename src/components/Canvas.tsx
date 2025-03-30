@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject, Image as FabricImage } from 'fabric';
 import { toast } from 'sonner';
@@ -19,10 +18,8 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
   const [lastPosX, setLastPosX] = useState(0);
   const [lastPosY, setLastPosY] = useState(0);
   
-  // Object being drawn (for shapes)
   const [drawingObject, setDrawingObject] = useState<FabricObject | null>(null);
   
-  // Initialize the canvas
   useEffect(() => {
     if (canvasRef.current && !fabricRef.current) {
       const parentDiv = canvasRef.current.parentElement;
@@ -38,15 +35,12 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
       
       fabricRef.current = fabricCanvas;
       
-      // Initialize the brush
       fabricCanvas.freeDrawingBrush = new PencilBrush(fabricCanvas);
       fabricCanvas.freeDrawingBrush.width = brushSize;
       fabricCanvas.freeDrawingBrush.color = activeColor;
       
-      // Add initial state to history
       addToHistory(fabricCanvas);
       
-      // Resize handler
       const handleResize = () => {
         if (fabricRef.current && parentDiv) {
           const newWidth = parentDiv.clientWidth - 48;
@@ -70,34 +64,27 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     }
   }, [addToHistory, activeTool, activeColor, brushSize]);
   
-  // Update canvas when tool changes
   useEffect(() => {
     const canvas = fabricRef.current;
     if (!canvas) return;
     
-    // Update drawing mode based on active tool
     canvas.isDrawingMode = activeTool === 'brush' || activeTool === 'eraser';
     
-    // Configure brush
     if (canvas.isDrawingMode && canvas.freeDrawingBrush) {
       const brush = canvas.freeDrawingBrush;
       brush.width = brushSize;
       
       if (activeTool === 'eraser') {
-        // For eraser, we'll use white color
         brush.color = '#FFFFFF';
       } else {
         brush.color = activeColor;
       }
     }
     
-    // Deselect any selected object
     canvas.discardActiveObject();
     canvas.renderAll();
-    
   }, [activeTool, activeColor, brushSize]);
   
-  // Mouse down handler for shape drawing
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (activeTool !== 'circle' && activeTool !== 'rectangle') return;
     if (!fabricRef.current) return;
@@ -105,12 +92,10 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     const canvas = fabricRef.current;
     setIsDrawing(true);
     
-    // Get canvas coordinates
     const pointer = canvas.getPointer(e.nativeEvent);
     setLastPosX(pointer.x);
     setLastPosY(pointer.y);
     
-    // Create a new shape
     let obj: FabricObject;
     
     if (activeTool === 'circle') {
@@ -125,7 +110,6 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
         originY: 'center'
       });
     } else {
-      // Rectangle
       obj = new Rect({
         left: pointer.x,
         top: pointer.y,
@@ -142,14 +126,12 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     canvas.renderAll();
   };
   
-  // Mouse move handler for shape drawing
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !drawingObject || !fabricRef.current) return;
     
     const canvas = fabricRef.current;
     const pointer = canvas.getPointer(e.nativeEvent);
     
-    // Update shape dimensions
     if (activeTool === 'circle') {
       const circle = drawingObject as Circle;
       const dx = pointer.x - lastPosX;
@@ -172,18 +154,15 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     canvas.renderAll();
   };
   
-  // Mouse up handler for shape drawing
   const handleMouseUp = () => {
     if (!isDrawing || !fabricRef.current) return;
     
     setIsDrawing(false);
     setDrawingObject(null);
     
-    // Add to history
     addToHistory(fabricRef.current);
   };
   
-  // Handle file upload for image tool
   const handleFileUpload = () => {
     if (activeTool !== 'image' || !fabricRef.current) return;
     
@@ -201,12 +180,7 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
           if (fabricRef.current) {
             const imgUrl = e.target?.result as string;
             
-            // Using the correct fabric Image loading method
-            FabricImage.fromURL(imgUrl, {
-              crossOrigin: 'anonymous',
-              objectCaching: false
-            }, (img) => {
-              // Scale image to fit canvas
+            FabricImage.fromURL(imgUrl, (img) => {
               const canvas = fabricRef.current!;
               const scale = Math.min(
                 (canvas.width / 2) / img.width!,
@@ -223,7 +197,6 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
               canvas.setActiveObject(img);
               canvas.renderAll();
               
-              // Add to history
               addToHistory(canvas);
               toast.success('Image added to canvas');
             });
@@ -237,7 +210,6 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     input.click();
   };
   
-  // Handle the color picker tool
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (activeTool !== 'picker' || !fabricRef.current) return;
     
@@ -245,16 +217,13 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     const pointer = canvas.getPointer(e.nativeEvent);
     const context = canvas.getContext();
     
-    // Get pixel data at the clicked position
     const imageData = context.getImageData(pointer.x, pointer.y, 1, 1).data;
     const r = imageData[0];
     const g = imageData[1];
     const b = imageData[2];
     
-    // Convert to hex
     const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     
-    // Notify about the picked color
     toast.info(`Color picked: ${hex}`);
   };
   
