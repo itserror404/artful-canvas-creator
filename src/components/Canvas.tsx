@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject, Image as FabricImage } from 'fabric';
 import { toast } from 'sonner';
@@ -180,7 +181,8 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
           if (fabricRef.current) {
             const imgUrl = e.target?.result as string;
             
-            FabricImage.fromURL(imgUrl, (img) => {
+            // Fix: Using the correct format for FabricImage.fromURL with options and callback
+            FabricImage.fromURL(imgUrl, {}, (img) => {
               const canvas = fabricRef.current!;
               const scale = Math.min(
                 (canvas.width / 2) / img.width!,
