@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Slider } from "@/components/ui/slider";
 import { 
   Brush, Eraser, Circle, Square, Image, Save, Undo, Redo, Pipette, Layers 
 } from 'lucide-react';
@@ -97,13 +98,13 @@ const Toolbar = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={brushSize}
-                  onChange={(e) => onBrushSizeChange(parseInt(e.target.value))}
-                  className="w-24 accent-artify-secondary"
+                <Slider 
+                  min={1} 
+                  max={50} 
+                  step={1} 
+                  value={[brushSize]} 
+                  onValueChange={(value) => onBrushSizeChange(value[0])}
+                  className="w-24"
                 />
                 <span className="text-xs w-6 text-white">{brushSize}px</span>
               </div>
