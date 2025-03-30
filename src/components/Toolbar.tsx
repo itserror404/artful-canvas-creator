@@ -46,7 +46,7 @@ const Toolbar = ({
 }: ToolbarProps) => {
   return (
     <TooltipProvider>
-      <div className="floating-panel fixed left-1/2 bottom-6 transform -translate-x-1/2 py-3 px-4 rounded-full flex items-center gap-2 z-10 animate-slide-in bg-artify-text text-white">
+      <div className="floating-panel fixed left-1/2 bottom-6 transform -translate-x-1/2 py-3 px-4 rounded-full flex items-center gap-2 z-10 bg-black text-white">
         {/* Drawing Tools */}
         <div className="flex items-center gap-1 pr-3 border-r border-gray-700">
           {tools.map((tool) => (
@@ -55,7 +55,8 @@ const Toolbar = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`dark-toolbar-button ${activeTool === tool.id ? 'dark-active' : ''}`}
+                  className={`p-2 rounded-lg transition-all duration-200 text-white 
+                              hover:bg-artify-secondary hover:text-artify-text ${activeTool === tool.id ? 'bg-artify-secondary text-artify-text' : ''}`}
                   onClick={() => onToolChange(tool.id)}
                 >
                   <tool.icon className="h-5 w-5" />
@@ -120,7 +121,7 @@ const Toolbar = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="dark-toolbar-button"
+                className="p-2 rounded-lg transition-all duration-200 text-white hover:bg-artify-secondary hover:text-artify-text"
                 onClick={onUndo}
                 disabled={!canUndo}
               >
@@ -137,7 +138,7 @@ const Toolbar = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="dark-toolbar-button"
+                className="p-2 rounded-lg transition-all duration-200 text-white hover:bg-artify-secondary hover:text-artify-text"
                 onClick={onRedo}
                 disabled={!canRedo}
               >
@@ -154,7 +155,7 @@ const Toolbar = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="dark-toolbar-button"
+                className="p-2 rounded-lg transition-all duration-200 text-white hover:bg-artify-secondary hover:text-artify-text"
                 onClick={onToggleLayers}
               >
                 <Layers className="h-5 w-5" />
@@ -170,7 +171,7 @@ const Toolbar = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="dark-toolbar-button"
+                className="p-2 rounded-lg transition-all duration-200 text-white hover:bg-artify-secondary hover:text-artify-text"
                 onClick={onSave}
               >
                 <Save className="h-5 w-5" />

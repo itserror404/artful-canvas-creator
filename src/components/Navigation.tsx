@@ -18,21 +18,21 @@ const Navigation = () => {
       <div className="flex gap-4 items-center">
         <Link 
           to="/" 
-          className={`toolbar-button ${location.pathname === '/' ? 'active' : ''} ${!isCanvasPage ? 'text-artify-text' : ''}`}
+          className={`p-2 rounded-lg transition-all duration-200 ${location.pathname === '/' ? 'bg-artify-secondary text-artify-text' : isCanvasPage ? 'text-artify-white hover:bg-artify-secondary hover:text-artify-text' : 'text-artify-text hover:bg-artify-secondary hover:text-artify-text'}`}
         >
           <Home className="h-5 w-5" />
         </Link>
         
         <Link 
           to="/canvas" 
-          className={`toolbar-button ${location.pathname === '/canvas' ? 'active' : ''} ${!isCanvasPage ? 'text-artify-text' : ''}`}
+          className={`p-2 rounded-lg transition-all duration-200 ${location.pathname === '/canvas' ? 'bg-artify-secondary text-artify-text' : isCanvasPage ? 'text-artify-white hover:bg-artify-secondary hover:text-artify-text' : 'text-artify-text hover:bg-artify-secondary hover:text-artify-text'}`}
         >
           <Brush className="h-5 w-5" />
         </Link>
         
         <Link 
           to="/about" 
-          className={`toolbar-button ${location.pathname === '/about' ? 'active' : ''} ${!isCanvasPage ? 'text-artify-text' : ''}`}
+          className={`p-2 rounded-lg transition-all duration-200 ${location.pathname === '/about' ? 'bg-artify-secondary text-artify-text' : isCanvasPage ? 'text-artify-white hover:bg-artify-secondary hover:text-artify-text' : 'text-artify-text hover:bg-artify-secondary hover:text-artify-text'}`}
         >
           <Info className="h-5 w-5" />
         </Link>

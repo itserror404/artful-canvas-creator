@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -53,7 +52,7 @@
   }
 
   body {
-    @apply bg-artify-background text-artify-text font-poppins;
+    @apply bg-artify-background text-artify-text font-poppins overflow-x-hidden;
   }
 
   /* Canvas specific styles */
@@ -68,16 +67,6 @@
 
   .toolbar-button.active {
     @apply bg-artify-secondary text-artify-text;
-  }
-
-  /* Dark toolbar buttons for canvas page */
-  .dark-toolbar-button {
-    @apply p-2 rounded-lg transition-all duration-200 text-white
-           hover:bg-artify-secondary/70 hover:text-white;
-  }
-
-  .dark-toolbar-button.dark-active {
-    @apply bg-artify-secondary/70 text-white;
   }
 
   .sidebar-item {
@@ -122,7 +111,7 @@
   }
 
   .floating-panel {
-    @apply glass rounded-lg shadow-lg p-4;
+    @apply rounded-lg shadow-lg p-4;
   }
   
   .canvas-navbar {
