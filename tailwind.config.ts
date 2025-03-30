@@ -66,11 +66,7 @@ export default {
 					primary: 'rgb(199, 219, 156)',    // Soft Green
 					secondary: 'rgb(255, 240, 189)',  // Soft Yellow
 					accent: 'rgb(253, 171, 158)',     // Soft Peach
-					error: 'rgb(229, 0, 70)',         // Vivid Red
-					background: '#F8F8F8',
-					text: '#333333',
-					white: '#FFFFFF',
-					success: '#2E8B57',
+					error: 'rgb(229, 0, 70)'          // Vivid Red
 				}
 			},
 			borderRadius: {
