@@ -38,6 +38,11 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
       
       fabricRef.current = fabricCanvas;
       
+      // Initialize the brush
+      fabricCanvas.freeDrawingBrush = new PencilBrush(fabricCanvas);
+      fabricCanvas.freeDrawingBrush.width = brushSize;
+      fabricCanvas.freeDrawingBrush.color = activeColor;
+      
       // Add initial state to history
       addToHistory(fabricCanvas);
       
@@ -63,7 +68,7 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
         window.removeEventListener('resize', handleResize);
       };
     }
-  }, [addToHistory, activeTool]);
+  }, [addToHistory, activeTool, activeColor, brushSize]);
   
   // Update canvas when tool changes
   useEffect(() => {
@@ -73,22 +78,16 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     // Update drawing mode based on active tool
     canvas.isDrawingMode = activeTool === 'brush' || activeTool === 'eraser';
     
-    // Configure brush - make sure the brush is initialized before setting properties
-    if (canvas.isDrawingMode) {
-      if (!canvas.freeDrawingBrush) {
-        canvas.freeDrawingBrush = new PencilBrush(canvas);
-      }
-      
+    // Configure brush
+    if (canvas.isDrawingMode && canvas.freeDrawingBrush) {
       const brush = canvas.freeDrawingBrush;
-      if (brush) {
-        brush.width = brushSize;
-        
-        if (activeTool === 'eraser') {
-          // For eraser, we'll use white color
-          brush.color = '#FFFFFF';
-        } else {
-          brush.color = activeColor;
-        }
+      brush.width = brushSize;
+      
+      if (activeTool === 'eraser') {
+        // For eraser, we'll use white color
+        brush.color = '#FFFFFF';
+      } else {
+        brush.color = activeColor;
       }
     }
     
@@ -202,7 +201,11 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
           if (fabricRef.current) {
             const imgUrl = e.target?.result as string;
             
-            FabricImage.fromURL(imgUrl, (img) => {
+            // Using the correct fabric Image loading method
+            FabricImage.fromURL(imgUrl, {
+              crossOrigin: 'anonymous',
+              objectCaching: false
+            }, (img) => {
               // Scale image to fit canvas
               const canvas = fabricRef.current!;
               const scale = Math.min(

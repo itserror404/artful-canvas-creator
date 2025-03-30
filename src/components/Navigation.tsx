@@ -7,6 +7,7 @@ import { Brush, Home, Info } from 'lucide-react';
 const Navigation = () => {
   const location = useLocation();
   const isCanvasPage = location.pathname === '/canvas';
+  const isHomePage = location.pathname === '/';
   
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 p-4 flex justify-between items-center ${isCanvasPage ? 'dark-glass' : 'glass'} animate-fade-in`}>
@@ -18,9 +19,9 @@ const Navigation = () => {
       <div className="flex gap-4 items-center">
         <Link 
           to="/" 
-          className={`toolbar-button ${location.pathname === '/' ? 'active' : ''}`}
+          className={`toolbar-button ${isHomePage ? 'active' : ''}`}
         >
-          <Home className="h-5 w-5" />
+          <Home className={`h-5 w-5 ${isHomePage && !isCanvasPage ? 'text-artify-text' : ''}`} />
         </Link>
         
         <Link 
