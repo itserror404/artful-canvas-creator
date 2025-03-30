@@ -14,6 +14,7 @@ interface CanvasProps {
 const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistory }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<FabricCanvas | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastPosX, setLastPosX] = useState(0);
@@ -21,12 +22,18 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
   
   const [drawingObject, setDrawingObject] = useState<FabricObject | null>(null);
   
+  // Initialize the canvas
   useEffect(() => {
-    if (canvasRef.current && !fabricRef.current) {
-      const parentDiv = canvasRef.current.parentElement;
-      const canvasWidth = parentDiv ? parentDiv.clientWidth - 48 : 800;
-      const canvasHeight = parentDiv ? parentDiv.clientHeight - 48 : 600;
+    // Ensure both DOM refs are available
+    if (!canvasRef.current || !containerRef.current) return;
+    
+    if (!fabricRef.current) {
+      const container = containerRef.current;
+      // Calculate canvas dimensions based on container size
+      const canvasWidth = container.clientWidth - 24;
+      const canvasHeight = container.clientHeight - 24;
       
+      // Create a new Fabric canvas
       const fabricCanvas = new FabricCanvas(canvasRef.current, {
         width: canvasWidth,
         height: canvasHeight,
@@ -36,16 +43,20 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
       
       fabricRef.current = fabricCanvas;
       
-      fabricCanvas.freeDrawingBrush = new PencilBrush(fabricCanvas);
+      // Initialize the drawing brush
+      if (!fabricCanvas.freeDrawingBrush) {
+        fabricCanvas.freeDrawingBrush = new PencilBrush(fabricCanvas);
+      }
       fabricCanvas.freeDrawingBrush.width = brushSize;
       fabricCanvas.freeDrawingBrush.color = activeColor;
       
       addToHistory(fabricCanvas);
       
+      // Handle window resize events
       const handleResize = () => {
-        if (fabricRef.current && parentDiv) {
-          const newWidth = parentDiv.clientWidth - 48;
-          const newHeight = parentDiv.clientHeight - 48;
+        if (fabricRef.current && container) {
+          const newWidth = container.clientWidth - 24;
+          const newHeight = container.clientHeight - 24;
           
           fabricRef.current.setDimensions({
             width: newWidth,
@@ -65,24 +76,23 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     }
   }, [addToHistory, activeTool, activeColor, brushSize]);
   
+  // Update brush and drawing mode when tools/colors change
   useEffect(() => {
     const canvas = fabricRef.current;
     if (!canvas) return;
     
     canvas.isDrawingMode = activeTool === 'brush' || activeTool === 'eraser';
     
-    if (canvas.isDrawingMode && canvas.freeDrawingBrush) {
-      const brush = canvas.freeDrawingBrush;
-      brush.width = brushSize;
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.width = brushSize;
       
       if (activeTool === 'eraser') {
-        brush.color = '#FFFFFF';
+        canvas.freeDrawingBrush.color = '#FFFFFF';
       } else {
-        brush.color = activeColor;
+        canvas.freeDrawingBrush.color = activeColor;
       }
     }
     
-    canvas.discardActiveObject();
     canvas.renderAll();
   }, [activeTool, activeColor, brushSize]);
   
@@ -93,6 +103,7 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
     const canvas = fabricRef.current;
     setIsDrawing(true);
     
+    // Get coordinates relative to the canvas
     const pointer = canvas.getPointer(e.nativeEvent);
     setLastPosX(pointer.x);
     setLastPosY(pointer.y);
@@ -181,8 +192,8 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
           if (fabricRef.current) {
             const imgUrl = e.target?.result as string;
             
-            // Fix: Using the correct format for FabricImage.fromURL with options and callback
-            FabricImage.fromURL(imgUrl, {}, (img) => {
+            // Properly call FabricImage.fromURL with correct parameters
+            FabricImage.fromURL(imgUrl, (img) => {
               const canvas = fabricRef.current!;
               const scale = Math.min(
                 (canvas.width / 2) / img.width!,
@@ -230,8 +241,8 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
   };
   
   return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="canvas-container w-full h-full flex items-center justify-center p-6">
+    <div className="w-full h-full flex items-center justify-center" ref={containerRef} style={{ minHeight: "calc(100vh - 150px)" }}>
+      <div className="canvas-container w-full h-full flex items-center justify-center p-3">
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
@@ -244,6 +255,7 @@ const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistor
               handleCanvasClick(e);
             }
           }}
+          style={{ border: '1px solid #ccc', touchAction: 'none' }}
         />
       </div>
     </div>
