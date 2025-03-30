@@ -1,9 +1,11 @@
 
+import React from 'react';
+
 const Index = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-artify-accent">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[rgb(255,244,234)]">
       <div className="text-center px-4 max-w-4xl">
-        <h1 className="text-5xl font-bold mb-6 text-black">Welcome to <span className="text-artify-error">Artify</span></h1>
+        <h1 className="text-5xl font-bold mb-6 text-black">Welcome to <span className="text-[rgb(201,104,104)]">Artify</span></h1>
         <p className="text-xl text-gray-700 mb-8">Express your creativity with our intuitive drawing application</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
