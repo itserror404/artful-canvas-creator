@@ -26,7 +26,7 @@ const Home = () => {
         
         <div className="container px-4 mx-auto z-10 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-black">
-            Create. Express. <span className="text-gradient">Artify.</span>
+            Create. Express. <span className="text-[rgb(201,104,104)]">Artify.</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto mb-8">
             A modern digital canvas for artists and creators to bring their imagination to life
