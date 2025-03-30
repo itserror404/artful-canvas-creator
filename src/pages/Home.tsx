@@ -34,7 +34,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen main-content">
       {/* Hero Section */}
       <div className="relative h-screen flex items-center justify-center overflow-hidden" ref={heroRef}>
         <div ref={addToRefs} className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-artify-secondary/20 blur-3xl parallax-element"></div>
@@ -45,13 +45,13 @@ const Home = () => {
           <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
             Create. Express. <span className="text-gradient">Artify.</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-8 animate-fade-in">
+          <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto mb-8 animate-fade-in">
             A modern digital canvas for artists and creators to bring their imagination to life
           </p>
           <Button 
             asChild
             size="lg"
-            className="bg-artify-secondary text-artify-primary hover:bg-artify-secondary/90 font-medium animate-fade-in"
+            className="bg-artify-secondary text-artify-text hover:bg-artify-secondary/90 font-medium animate-fade-in"
           >
             <Link to="/canvas" className="flex items-center gap-2">
               Start Drawing <ArrowRight className="h-4 w-4" />
@@ -61,7 +61,7 @@ const Home = () => {
       </div>
 
       {/* Features Section */}
-      <section className="py-20 bg-artify-primary">
+      <section className="py-20 bg-artify-primary text-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
             Powerful <span className="text-artify-secondary">Features</span>
@@ -87,11 +87,11 @@ const Home = () => {
             ].map((feature, index) => (
               <div 
                 key={index} 
-                className="bg-artify-background/80 p-6 rounded-lg border border-gray-800 hover:border-artify-secondary/50 transition-all duration-300 hover:shadow-lg hover:shadow-artify-secondary/5"
+                className="bg-artify-primary/80 p-6 rounded-lg border border-gray-800 hover:border-artify-secondary/50 transition-all duration-300 hover:shadow-lg hover:shadow-artify-secondary/5"
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
                 <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-gray-400">{feature.description}</p>
+                <p className="text-gray-300">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -101,14 +101,14 @@ const Home = () => {
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-br from-artify-primary to-artify-background">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Create?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Ready to Create?</h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
             Start your artistic journey with Artify today.
           </p>
           <Button 
             asChild
             size="lg"
-            className="bg-artify-accent text-white hover:bg-artify-accent/90 font-medium"
+            className="bg-artify-accent text-artify-text hover:bg-artify-accent/90 font-medium"
           >
             <Link to="/canvas" className="flex items-center gap-2">
               <Brush className="h-5 w-5" /> Launch Canvas
@@ -123,3 +123,4 @@ const Home = () => {
 };
 
 export default Home;
+
