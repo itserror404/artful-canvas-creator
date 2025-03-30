@@ -70,6 +70,16 @@
     @apply bg-artify-secondary text-artify-text;
   }
 
+  /* Dark toolbar buttons for canvas page */
+  .dark-toolbar-button {
+    @apply p-2 rounded-lg transition-all duration-200 text-white
+           hover:bg-artify-secondary/70 hover:text-white;
+  }
+
+  .dark-toolbar-button.dark-active {
+    @apply bg-artify-secondary/70 text-white;
+  }
+
   .sidebar-item {
     @apply flex items-center gap-2 p-2 rounded-lg transition-all duration-200
            hover:bg-artify-secondary/20 cursor-pointer;
@@ -83,6 +93,15 @@
   .parallax-element {
     @apply transition-transform duration-500 ease-out;
   }
+
+  /* Card animations */
+  .card-3d {
+    @apply transition-all duration-500 ease-out transform perspective-1000;
+  }
+
+  .floating-card {
+    @apply shadow-lg transform-gpu transition-all duration-500 ease-out relative;
+  }
 }
 
 @layer utilities {
@@ -95,7 +114,11 @@
   }
   
   .glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/10 shadow-lg;
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+
+  .glass-nav {
+    @apply bg-white/90 backdrop-blur-md border-b border-white/20 shadow-sm;
   }
 
   .floating-panel {
@@ -103,11 +126,63 @@
   }
   
   .canvas-navbar {
-    @apply bg-artify-primary text-artify-white;
+    @apply bg-artify-text text-artify-white;
   }
   
   .main-content {
-    @apply max-w-[1200px] mx-auto px-8;
+    @apply max-w-[1200px] mx-auto px-6 sm:px-8;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .animate-float {
+    animation: floating 6s ease-in-out infinite;
+  }
+
+  .animate-float-delay {
+    animation: floating 6s ease-in-out 1s infinite;
+  }
+
+  .animate-float-alt {
+    animation: floating 7s ease-in-out 0.5s infinite;
   }
 }
 
+@keyframes floating {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* Add styles for dark background in the features section */
+.bg-artify-primary-dark {
+  background-color: #5A4CAD;
+}
+
+/* Add slide-in animation */
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.6s ease-out forwards;
+}

@@ -1,6 +1,5 @@
-
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject, Image } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Image as FabricImage } from 'fabric';
 import { toast } from 'sonner';
 
 interface CanvasProps {
@@ -27,7 +26,6 @@ const Canvas = ({
     if (!canvasRef.current) return;
 
     const initCanvas = async () => {
-      // Initialize Fabric.js canvas
       const canvas = new FabricCanvas(canvasRef.current, {
         width: window.innerWidth * 0.8,
         height: window.innerHeight * 0.8,
@@ -37,7 +35,6 @@ const Canvas = ({
       
       fabricRef.current = canvas;
       
-      // Handle window resize
       const resizeCanvas = () => {
         if (fabricRef.current) {
           fabricRef.current.setDimensions({
@@ -49,17 +46,14 @@ const Canvas = ({
       
       window.addEventListener('resize', resizeCanvas);
       
-      // Initial history entry
       addToHistory(canvas);
       
-      // Set up object added listener to add to history
       canvas.on('object:added', () => {
         if (!isDrawingRef.current && fabricRef.current) {
           addToHistory(fabricRef.current);
         }
       });
       
-      // Set up object modified listener to add to history
       canvas.on('object:modified', () => {
         if (fabricRef.current) {
           addToHistory(fabricRef.current);
@@ -77,16 +71,13 @@ const Canvas = ({
     initCanvas();
   }, [addToHistory]);
 
-  // Update canvas based on active tool
   useEffect(() => {
     if (!fabricRef.current) return;
     
     const canvas = fabricRef.current;
     
-    // Update drawing mode based on active tool
     canvas.isDrawingMode = activeTool === 'brush' || activeTool === 'eraser';
     
-    // Configure brush - make sure the brush is initialized before setting properties
     if (canvas.isDrawingMode) {
       if (!canvas.freeDrawingBrush) {
         canvas.freeDrawingBrush = new PencilBrush(canvas);
@@ -97,7 +88,6 @@ const Canvas = ({
         brush.width = brushSize;
         
         if (activeTool === 'eraser') {
-          // For eraser, we'll use white color
           brush.color = '#FFFFFF';
         } else {
           brush.color = activeColor;
@@ -105,19 +95,15 @@ const Canvas = ({
       }
     }
     
-    // Handle click events for shape tools
     const handleCanvasClick = (options: any) => {
       if (!fabricRef.current) return;
       
       const pointer = fabricRef.current.getPointer(options.e);
       
       if (activeTool === 'rectangle') {
-        // Create rectangle
         if (!lastClickRef.current) {
-          // First click - store position
           lastClickRef.current = { x: pointer.x, y: pointer.y };
         } else {
-          // Second click - create rectangle
           const rect = new Rect({
             left: Math.min(lastClickRef.current.x, pointer.x),
             top: Math.min(lastClickRef.current.y, pointer.y),
@@ -132,16 +118,12 @@ const Canvas = ({
           fabricRef.current.setActiveObject(rect);
           lastClickRef.current = null;
           
-          // Add to history
           addToHistory(fabricRef.current);
         }
       } else if (activeTool === 'circle') {
-        // Create circle
         if (!lastClickRef.current) {
-          // First click - store position
           lastClickRef.current = { x: pointer.x, y: pointer.y };
         } else {
-          // Second click - create circle
           const radius = Math.sqrt(
             Math.pow(pointer.x - lastClickRef.current.x, 2) +
             Math.pow(pointer.y - lastClickRef.current.y, 2)
@@ -160,24 +142,20 @@ const Canvas = ({
           fabricRef.current.setActiveObject(circle);
           lastClickRef.current = null;
           
-          // Add to history
           addToHistory(fabricRef.current);
         }
       } else if (activeTool === 'picker') {
-        // Color picker tool
         const objects = fabricRef.current.getObjects();
         for (const obj of objects) {
           if (obj.containsPoint(pointer)) {
             const fill = obj.fill as string;
             if (fill && fill !== 'transparent') {
-              // TODO: Call a function to update active color in parent component
               toast.info(`Color picked: ${fill}`);
               break;
             }
           }
         }
       } else if (activeTool === 'image') {
-        // Prompt user to select an image
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -193,9 +171,7 @@ const Canvas = ({
               if (!fabricRef.current) return;
               const imgUrl = event.target?.result as string;
               
-              // Create a fabric Image
-              Image.fromURL(imgUrl, (img) => {
-                // Scale image to fit canvas
+              FabricImage.fromURL(imgUrl).then(img => {
                 const canvas = fabricRef.current!;
                 const scale = Math.min(
                   canvas.width! / (img.width! * 2),
@@ -211,8 +187,10 @@ const Canvas = ({
                 canvas.add(img);
                 canvas.setActiveObject(img);
                 
-                // Add to history
                 addToHistory(canvas);
+              }).catch(error => {
+                console.error("Error loading image:", error);
+                toast.error("Failed to load image");
               });
             };
             reader.readAsDataURL(file);
@@ -220,15 +198,12 @@ const Canvas = ({
         };
         input.click();
       } else {
-        // Reset last click reference for other tools
         lastClickRef.current = null;
       }
     };
     
-    // Add click listener for shape tools
     canvas.on('mouse:down', handleCanvasClick);
     
-    // Path drawing started
     canvas.on('path:created', () => {
       isDrawingRef.current = false;
       if (fabricRef.current) {
@@ -236,7 +211,6 @@ const Canvas = ({
       }
     });
     
-    // Track drawing state
     canvas.on('mouse:down', () => {
       if (canvas.isDrawingMode) {
         isDrawingRef.current = true;
