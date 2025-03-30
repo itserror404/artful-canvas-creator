@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -64,14 +63,14 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				artify: {
-					primary: '#6A5ACD',     // Slate Blue
-					secondary: '#B8E994',   // Soft Mint
-					background: '#F8F8F8',  // Pearl White
-					accent: '#E4C9A7',      // Warm Sand
-					text: '#333333',        // Deep Charcoal
+					primary: 'rgb(199, 219, 156)',    // Soft Green
+					secondary: 'rgb(255, 240, 189)',  // Soft Yellow
+					accent: 'rgb(253, 171, 158)',     // Soft Peach
+					error: 'rgb(229, 0, 70)',         // Vivid Red
+					background: '#F8F8F8',
+					text: '#333333',
 					white: '#FFFFFF',
-					success: '#2E8B57',     // Forest Green
-					error: '#FF6B6B',       // Sunset Red
+					success: '#2E8B57',
 				}
 			},
 			borderRadius: {
@@ -135,4 +134,3 @@ export default {
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-
