@@ -52,7 +52,7 @@
   }
 
   body {
-    @apply bg-white text-artify-primary font-poppins overflow-x-hidden;
+    @apply bg-white text-artify-text font-poppins overflow-x-hidden;
   }
 
   .canvas-container {
@@ -152,8 +152,9 @@
   }
 }
 
+/* Update this to use our artify-primary color */
 .bg-artify-primary-dark {
-  background-color: #5A4CAD;
+  background-color: rgba(199, 219, 156, 0.8);
 }
 
 @keyframes slideIn {
