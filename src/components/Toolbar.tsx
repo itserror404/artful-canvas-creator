@@ -46,9 +46,9 @@ const Toolbar = ({
 }: ToolbarProps) => {
   return (
     <TooltipProvider>
-      <div className="floating-panel fixed left-1/2 bottom-6 transform -translate-x-1/2 py-3 px-4 rounded-full flex items-center gap-2 z-10 animate-slide-in">
+      <div className="dark-floating-panel fixed left-1/2 bottom-6 transform -translate-x-1/2 py-3 px-4 rounded-full flex items-center gap-2 z-10 animate-slide-in">
         {/* Drawing Tools */}
-        <div className="flex items-center gap-1 pr-3 border-r border-gray-700">
+        <div className="flex items-center gap-1 pr-3 border-r border-artify-primary/30">
           {tools.map((tool) => (
             <Tooltip key={tool.id}>
               <TooltipTrigger asChild>
@@ -69,7 +69,7 @@ const Toolbar = ({
         </div>
         
         {/* Color Picker */}
-        <div className="flex items-center gap-2 px-3 border-r border-gray-700">
+        <div className="flex items-center gap-2 px-3 border-r border-artify-primary/30">
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-2">
@@ -104,7 +104,7 @@ const Toolbar = ({
                   onChange={(e) => onBrushSizeChange(parseInt(e.target.value))}
                   className="w-24 accent-artify-secondary"
                 />
-                <span className="text-xs w-6">{brushSize}px</span>
+                <span className="text-xs w-6 text-white">{brushSize}px</span>
               </div>
             </TooltipTrigger>
             <TooltipContent>

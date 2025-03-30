@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject, Image } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, PencilBrush, Object as FabricObject } from 'fabric';
 import { toast } from 'sonner';
 
 interface CanvasProps {
@@ -11,77 +11,64 @@ interface CanvasProps {
   addToHistory: (canvas: FabricCanvas) => void;
 }
 
-const Canvas = ({ 
-  activeTool, 
-  activeColor, 
-  brushSize,
-  activeLayerId,
-  addToHistory
-}: CanvasProps) => {
+const Canvas = ({ activeTool, activeColor, brushSize, activeLayerId, addToHistory }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<FabricCanvas | null>(null);
-  const isDrawingRef = useRef(false);
-  const lastClickRef = useRef<{ x: number, y: number } | null>(null);
-
+  
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastPosX, setLastPosX] = useState(0);
+  const [lastPosY, setLastPosY] = useState(0);
+  
+  // Object being drawn (for shapes)
+  const [drawingObject, setDrawingObject] = useState<FabricObject | null>(null);
+  
+  // Initialize the canvas
   useEffect(() => {
-    if (!canvasRef.current) return;
-
-    const initCanvas = async () => {
-      // Initialize Fabric.js canvas
-      const canvas = new FabricCanvas(canvasRef.current, {
-        width: window.innerWidth * 0.8,
-        height: window.innerHeight * 0.8,
-        backgroundColor: "#ffffff",
-        isDrawingMode: activeTool === 'brush'
+    if (canvasRef.current && !fabricRef.current) {
+      const parentDiv = canvasRef.current.parentElement;
+      const canvasWidth = parentDiv ? parentDiv.clientWidth - 48 : 800;
+      const canvasHeight = parentDiv ? parentDiv.clientHeight - 48 : 600;
+      
+      const fabricCanvas = new FabricCanvas(canvasRef.current, {
+        width: canvasWidth,
+        height: canvasHeight,
+        backgroundColor: 'white',
+        isDrawingMode: activeTool === 'brush' || activeTool === 'eraser'
       });
       
-      fabricRef.current = canvas;
+      fabricRef.current = fabricCanvas;
       
-      // Handle window resize
-      const resizeCanvas = () => {
-        if (fabricRef.current) {
+      // Add initial state to history
+      addToHistory(fabricCanvas);
+      
+      // Resize handler
+      const handleResize = () => {
+        if (fabricRef.current && parentDiv) {
+          const newWidth = parentDiv.clientWidth - 48;
+          const newHeight = parentDiv.clientHeight - 48;
+          
           fabricRef.current.setDimensions({
-            width: window.innerWidth * 0.8,
-            height: window.innerHeight * 0.8
+            width: newWidth,
+            height: newHeight
           });
+          
+          fabricRef.current.renderAll();
         }
       };
       
-      window.addEventListener('resize', resizeCanvas);
-      
-      // Initial history entry
-      addToHistory(canvas);
-      
-      // Set up object added listener to add to history
-      canvas.on('object:added', () => {
-        if (!isDrawingRef.current && fabricRef.current) {
-          addToHistory(fabricRef.current);
-        }
-      });
-      
-      // Set up object modified listener to add to history
-      canvas.on('object:modified', () => {
-        if (fabricRef.current) {
-          addToHistory(fabricRef.current);
-        }
-      });
-      
-      toast.success('Canvas ready!');
+      window.addEventListener('resize', handleResize);
       
       return () => {
-        window.removeEventListener('resize', resizeCanvas);
-        canvas.dispose();
+        fabricRef.current?.dispose();
+        window.removeEventListener('resize', handleResize);
       };
-    };
-    
-    initCanvas();
-  }, [addToHistory]);
-
-  // Update canvas based on active tool
+    }
+  }, [addToHistory, activeTool]);
+  
+  // Update canvas when tool changes
   useEffect(() => {
-    if (!fabricRef.current) return;
-    
     const canvas = fabricRef.current;
+    if (!canvas) return;
     
     // Update drawing mode based on active tool
     canvas.isDrawingMode = activeTool === 'brush' || activeTool === 'eraser';
@@ -105,159 +92,186 @@ const Canvas = ({
       }
     }
     
-    // Handle click events for shape tools
-    const handleCanvasClick = (options: any) => {
-      if (!fabricRef.current) return;
+    // Deselect any selected object
+    canvas.discardActiveObject();
+    canvas.renderAll();
+    
+  }, [activeTool, activeColor, brushSize]);
+  
+  // Mouse down handler for shape drawing
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (activeTool !== 'circle' && activeTool !== 'rectangle') return;
+    if (!fabricRef.current) return;
+    
+    const canvas = fabricRef.current;
+    setIsDrawing(true);
+    
+    // Get canvas coordinates
+    const pointer = canvas.getPointer(e.nativeEvent);
+    setLastPosX(pointer.x);
+    setLastPosY(pointer.y);
+    
+    // Create a new shape
+    let obj: FabricObject;
+    
+    if (activeTool === 'circle') {
+      obj = new Circle({
+        left: pointer.x,
+        top: pointer.y,
+        radius: 1,
+        fill: 'transparent',
+        stroke: activeColor,
+        strokeWidth: brushSize / 2,
+        originX: 'center',
+        originY: 'center'
+      });
+    } else {
+      // Rectangle
+      obj = new Rect({
+        left: pointer.x,
+        top: pointer.y,
+        width: 1,
+        height: 1,
+        fill: 'transparent',
+        stroke: activeColor,
+        strokeWidth: brushSize / 2
+      });
+    }
+    
+    canvas.add(obj);
+    setDrawingObject(obj);
+    canvas.renderAll();
+  };
+  
+  // Mouse move handler for shape drawing
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !drawingObject || !fabricRef.current) return;
+    
+    const canvas = fabricRef.current;
+    const pointer = canvas.getPointer(e.nativeEvent);
+    
+    // Update shape dimensions
+    if (activeTool === 'circle') {
+      const circle = drawingObject as Circle;
+      const dx = pointer.x - lastPosX;
+      const dy = pointer.y - lastPosY;
+      const radius = Math.sqrt(dx * dx + dy * dy);
+      circle.set({ radius });
+    } else if (activeTool === 'rectangle') {
+      const rect = drawingObject as Rect;
+      const width = Math.abs(pointer.x - lastPosX);
+      const height = Math.abs(pointer.y - lastPosY);
       
-      const pointer = fabricRef.current.getPointer(options.e);
-      
-      if (activeTool === 'rectangle') {
-        // Create rectangle
-        if (!lastClickRef.current) {
-          // First click - store position
-          lastClickRef.current = { x: pointer.x, y: pointer.y };
-        } else {
-          // Second click - create rectangle
-          const rect = new Rect({
-            left: Math.min(lastClickRef.current.x, pointer.x),
-            top: Math.min(lastClickRef.current.y, pointer.y),
-            width: Math.abs(pointer.x - lastClickRef.current.x),
-            height: Math.abs(pointer.y - lastClickRef.current.y),
-            fill: activeColor,
-            stroke: '#000',
-            strokeWidth: 1
-          });
-          
-          fabricRef.current.add(rect);
-          fabricRef.current.setActiveObject(rect);
-          lastClickRef.current = null;
-          
-          // Add to history
-          addToHistory(fabricRef.current);
-        }
-      } else if (activeTool === 'circle') {
-        // Create circle
-        if (!lastClickRef.current) {
-          // First click - store position
-          lastClickRef.current = { x: pointer.x, y: pointer.y };
-        } else {
-          // Second click - create circle
-          const radius = Math.sqrt(
-            Math.pow(pointer.x - lastClickRef.current.x, 2) +
-            Math.pow(pointer.y - lastClickRef.current.y, 2)
-          );
-          
-          const circle = new Circle({
-            left: lastClickRef.current.x - radius,
-            top: lastClickRef.current.y - radius,
-            radius: radius,
-            fill: activeColor,
-            stroke: '#000',
-            strokeWidth: 1
-          });
-          
-          fabricRef.current.add(circle);
-          fabricRef.current.setActiveObject(circle);
-          lastClickRef.current = null;
-          
-          // Add to history
-          addToHistory(fabricRef.current);
-        }
-      } else if (activeTool === 'picker') {
-        // Color picker tool
-        const objects = fabricRef.current.getObjects();
-        for (const obj of objects) {
-          if (obj.containsPoint(pointer)) {
-            const fill = obj.fill as string;
-            if (fill && fill !== 'transparent') {
-              // TODO: Call a function to update active color in parent component
-              toast.info(`Color picked: ${fill}`);
-              break;
-            }
-          }
-        }
-      } else if (activeTool === 'image') {
-        // Prompt user to select an image
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = (e) => {
-          if (!fabricRef.current) return;
-          
-          const target = e.target as HTMLInputElement;
-          const file = target.files?.[0];
-          
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              if (!fabricRef.current) return;
-              const imgUrl = event.target?.result as string;
+      rect.set({
+        width,
+        height,
+        left: pointer.x < lastPosX ? pointer.x : lastPosX,
+        top: pointer.y < lastPosY ? pointer.y : lastPosY
+      });
+    }
+    
+    canvas.renderAll();
+  };
+  
+  // Mouse up handler for shape drawing
+  const handleMouseUp = () => {
+    if (!isDrawing || !fabricRef.current) return;
+    
+    setIsDrawing(false);
+    setDrawingObject(null);
+    
+    // Add to history
+    addToHistory(fabricRef.current);
+  };
+  
+  // Handle file upload for image tool
+  const handleFileUpload = () => {
+    if (activeTool !== 'image' || !fabricRef.current) return;
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        const file = target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+          if (fabricRef.current) {
+            const imgUrl = e.target?.result as string;
+            
+            fabric.Image.fromURL(imgUrl, (img) => {
+              // Scale image to fit canvas
+              const canvas = fabricRef.current!;
+              const scale = Math.min(
+                (canvas.width / 2) / img.width!,
+                (canvas.height / 2) / img.height!
+              );
               
-              // Create a fabric Image
-              Image.fromURL(imgUrl, (img) => {
-                // Scale image to fit canvas
-                const canvas = fabricRef.current!;
-                const scale = Math.min(
-                  canvas.width! / (img.width! * 2),
-                  canvas.height! / (img.height! * 2)
-                );
-                
-                img.scale(scale);
-                img.set({
-                  left: pointer.x - (img.width! * scale) / 2,
-                  top: pointer.y - (img.height! * scale) / 2
-                });
-                
-                canvas.add(img);
-                canvas.setActiveObject(img);
-                
-                // Add to history
-                addToHistory(canvas);
+              img.scale(scale);
+              img.set({
+                left: canvas.width / 4,
+                top: canvas.height / 4
               });
-            };
-            reader.readAsDataURL(file);
+              
+              canvas.add(img);
+              canvas.setActiveObject(img);
+              canvas.renderAll();
+              
+              // Add to history
+              addToHistory(canvas);
+              toast.success('Image added to canvas');
+            });
           }
         };
-        input.click();
-      } else {
-        // Reset last click reference for other tools
-        lastClickRef.current = null;
+        
+        reader.readAsDataURL(file);
       }
     };
     
-    // Add click listener for shape tools
-    canvas.on('mouse:down', handleCanvasClick);
+    input.click();
+  };
+  
+  // Handle the color picker tool
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (activeTool !== 'picker' || !fabricRef.current) return;
     
-    // Path drawing started
-    canvas.on('path:created', () => {
-      isDrawingRef.current = false;
-      if (fabricRef.current) {
-        addToHistory(fabricRef.current);
-      }
-    });
+    const canvas = fabricRef.current;
+    const pointer = canvas.getPointer(e.nativeEvent);
+    const context = canvas.getContext();
     
-    // Track drawing state
-    canvas.on('mouse:down', () => {
-      if (canvas.isDrawingMode) {
-        isDrawingRef.current = true;
-      }
-    });
+    // Get pixel data at the clicked position
+    const imageData = context.getImageData(pointer.x, pointer.y, 1, 1).data;
+    const r = imageData[0];
+    const g = imageData[1];
+    const b = imageData[2];
     
-    canvas.on('mouse:up', () => {
-      if (isDrawingRef.current && fabricRef.current) {
-        isDrawingRef.current = false;
-      }
-    });
+    // Convert to hex
+    const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     
-    return () => {
-      canvas.off('mouse:down');
-      canvas.off('path:created');
-    };
-  }, [activeTool, activeColor, brushSize, addToHistory]);
-
+    // Notify about the picked color
+    toast.info(`Color picked: ${hex}`);
+  };
+  
   return (
-    <div className="canvas-container flex items-center justify-center">
-      <canvas ref={canvasRef} />
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="canvas-container w-full h-full flex items-center justify-center p-6">
+        <canvas
+          ref={canvasRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onClick={(e) => {
+            if (activeTool === 'image') {
+              handleFileUpload();
+            } else if (activeTool === 'picker') {
+              handleCanvasClick(e);
+            }
+          }}
+        />
+      </div>
     </div>
   );
 };

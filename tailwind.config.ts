@@ -64,11 +64,15 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				artify: {
-					primary: '#1E2A38',
-					secondary: '#00C9A7',
-					background: '#121212',
-					accent: '#FF6B81',
+					primary: '#6A5ACD',     // Slate Blue
+					secondary: '#B8E994',   // Soft Mint
+					background: '#F8F8F8',  // Pearl White
+					accent: '#E4C9A7',      // Warm Sand
+					text: '#333333',        // Deep Charcoal
+					success: '#2E8B57',     // Forest Green
+					error: '#FF6B6B',       // Sunset Red
 					white: '#FFFFFF',
+					dark: '#1E1E2E',        // Dark background for navbar
 				}
 			},
 			borderRadius: {
