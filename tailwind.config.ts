@@ -64,10 +64,10 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				artify: {
-					primary: 'rgb(199, 219, 156)',    // Soft Green
-					secondary: 'rgb(255, 240, 189)',  // Soft Yellow
-					accent: 'rgb(253, 171, 158)',     // Soft Peach
-					error: 'rgb(229, 0, 70)',         // Vivid Red
+					primary: 'rgb(126, 172, 181)',    // Teal for "Ready to Create"
+					secondary: 'rgb(250, 223, 161)',  // Soft Yellow for "Features"
+					accent: 'rgb(255, 244, 234)',     // Light Cream for "Hero Section"
+					error: 'rgb(201, 104, 104)',      // Soft Red for "Footer/Buttons"
 					white: '#FFFFFF',                 // Pure white
 					text: '#000000'                   // Black for text
 				}
